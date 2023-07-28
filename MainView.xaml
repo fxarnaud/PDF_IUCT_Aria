@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="PDF_IUCT.MainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:oxy ="http://oxyplot.org/wpf"
+             xmlns:local="clr-namespace:PDF_IUCT"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1500">
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*"></RowDefinition>
+            <RowDefinition Height="0.2*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <oxy:PlotView Grid.Column="0" Grid.Row="0" Model ="{Binding PlotModel}" />
+        <DataGrid Grid.Column="1" Grid.Row="0" Name="dgStatistics" ItemsSource="{Binding Structures}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Width="10" Header="">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border Background= "{Binding BackgroundColor}">
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn  Header="Structure" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox Content="{Binding structure_id}" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" IsChecked="{Binding isChecked}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Volume (cc)" Width="*"  Binding="{Binding volume, StringFormat=N1}"></DataGridTextColumn>
+                <DataGridTextColumn Header="DMax(Gy)" Width="*" Binding="{Binding maxdose, StringFormat=N1}"></DataGridTextColumn>
+                <DataGridTextColumn Header="DMoy(Gy)" Width="*" Binding="{Binding meandose, StringFormat=N1}"></DataGridTextColumn>
+                <DataGridTextColumn Header="D1cc(Gy)" Width="*" Binding="{Binding d1cc, StringFormat=N1}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Button x:Name="btn_print" Content="PRINT" Grid.Row="1" Grid.ColumnSpan="2" Margin="12" Click="btn_print_Click" ></Button>
+    </Grid>
+</UserControl>
