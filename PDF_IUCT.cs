@@ -19,6 +19,12 @@ namespace VMS.TPS
 
         public void Execute(ScriptContext context)//, Window window)
         {
+
+            //METTRE PLUTOT CA !!!
+            string WORKBOOK_TEMPLATE_DIR = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //A MODIFIER POUR MODIFIER LE CHEMIN PAR DEFAUT
+            string WORKBOOK_RESULT_DIR = System.IO.Path.GetTempPath();
+
+
             string working_folder = @"\\srv015\SF_COM\ARNAUD_FX\impression_pdf\";
 
             if (context == null)
