@@ -20,7 +20,7 @@ namespace VMS.TPS
         public void Execute(ScriptContext context)//, Window window)
         {
 
-            //METTRE PLUTOT CA !!!
+            //METTRE PLUTOT CA !!! ici
             string WORKBOOK_TEMPLATE_DIR = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //A MODIFIER POUR MODIFIER LE CHEMIN PAR DEFAUT
             string WORKBOOK_RESULT_DIR = System.IO.Path.GetTempPath();
 
