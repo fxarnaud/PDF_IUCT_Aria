@@ -22,10 +22,9 @@ namespace VMS.TPS
 
             //METTRE PLUTOT CA !!! ici
             string WORKBOOK_TEMPLATE_DIR = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //A MODIFIER POUR MODIFIER LE CHEMIN PAR DEFAUT
-            string WORKBOOK_RESULT_DIR = System.IO.Path.GetTempPath();
-
-
-            string working_folder = @"\\srv015\SF_COM\ARNAUD_FX\impression_pdf\";
+            string WORKBOOK_RESULT_DIR = System.IO.Path.GetTempPath();            
+            string working_folder = @"\\srv015\radiotherapie\SCRIPTS_ECLIPSE\PDF_IUC\datas_nepaseffacer\";
+            //string working_folder = @"\\srv015\SF_COM\ARNAUD_FX\impression_pdf\";
 
             if (context == null)
             {
@@ -47,7 +46,7 @@ namespace VMS.TPS
 
 
             //First capture screen without any window
-            string filePath = working_folder + "screenshotbis.png";
+            string filePath = working_folder + "screenshot.png";
             System.Drawing.Rectangle screenBounds = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
 
             using (Bitmap bitmap = new Bitmap(screenBounds.Width, screenBounds.Height - 35))
