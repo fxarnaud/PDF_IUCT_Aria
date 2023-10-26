@@ -263,7 +263,6 @@ namespace PDF_IUCT
             }
 
             document.LastSection.Add(table);
-
             section.AddParagraph("");
             section.AddParagraph("");
 
@@ -316,7 +315,7 @@ namespace PDF_IUCT
             row1 = table.AddRow();
             row1 = table.AddRow();
             row1.Cells[0].AddParagraph("Plan créé :");
-            row1.Cells[1].AddParagraph(ctx.PlanSetup.HistoryUserDisplayName + " (" + ctx.PlanSetup.CreationDateTime + ")");
+            row1.Cells[1].AddParagraph(ctx.PlanSetup.CreationUserName + " (" + ctx.PlanSetup.CreationDateTime + ")");
             row1 = table.AddRow();
             row1.Cells[0].AddParagraph("Appro. plan :");
             row1.Cells[1].AddParagraph(ctx.PlanSetup.PlanningApproverDisplayName == "" ? "-" : ctx.PlanSetup.PlanningApproverDisplayName + " (" + ctx.PlanSetup.PlanningApprovalDate + ")");
@@ -446,18 +445,23 @@ namespace PDF_IUCT
             {
                 MigraDoc.DocumentObjectModel.Tables.Row row = table.AddRow();
                 row.Borders.Width = 0.1;
+                row.Format.Font.Size = 13;                
                 if (ligne == 0)
                 {
                     row.Borders.Visible = true;
                     row.Format.Font.Bold = true;
-                    row.Format.Font.Size = 12;
-                    row.Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(200, 200, 200);// (175, 220, 232);
+                    row.Format.Font.Size = 14;
+                    row.Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(175, 220, 232);// (175, 220, 232);
                 }
                 row.Cells[0].AddParagraph(Beam_Elements[0].Datas.ElementAt(ligne).Key);
 
-
                 for (int colonne = 0; colonne < nbrecolonne; colonne++)
                 {
+                    if (Beam_Elements[(colonne) + (numtableau * 6)].Datas.ElementAt(ligne).Key.Equals("Bolus"))
+                    {
+                        row.Cells[colonne + 1].Format.Font.Bold = true;
+                        row.Cells[colonne + 1].Format.Font.Color= MigraDoc.DocumentObjectModel.Colors.Red;
+                    }
                     if (Beam_Elements[(colonne) + (numtableau * 6)].Datas.ElementAt(ligne).Key.Equals("UM"))
                     {
                         row.Cells[colonne + 1].Format.Font.Bold = true;
@@ -669,7 +673,7 @@ namespace PDF_IUCT
                 //prendre l'opposé de l'isocentre pour qu'on ait les decalages à réaliser
                 beami.iso_x = -beami.iso_x;
                 beami.iso_y = -beami.iso_y;
-                beami.iso_z = -beami.iso_z;
+                beami.iso_z = beami.iso_z;  //Decalage à faire dans le même sens que la position de table
 
                 //Ajout d'une nouvelle ligne pour indiquer les valeurs des décalages
                 row = table.AddRow();
@@ -684,11 +688,11 @@ namespace PDF_IUCT
                 row = table.AddRow();
                 row.Cells[0].AddParagraph("Direction :");
                 string dirx = "aucune";
-                dirx = beami.iso_x > 0 ? "Table vers la gauche en regardant le bras" : "Table vers la droite en regardant le bras";
+                dirx = beami.iso_x > 0 ? "Table vers la droite en regardant le bras" : "Table vers la  gauche en regardant le bras";
                 string diry = "aucune";
-                diry = beami.iso_y > 0 ? "Table vers le haut" : "Table vers le bas";
+                diry = beami.iso_y > 0 ? "Table vers le bas" : "Table vers le haut";
                 string dirz = "aucune";
-                dirz = beami.iso_x > 0 ? "Table en long vers le bras" : "Table en long vers le sens opposé au bras";
+                dirz = beami.iso_z > 0 ? "Table en sortie (out)" : "Table en long vers le bras (in)";
                 row.Cells[1].AddParagraph(dirx);
                 row.Cells[2].AddParagraph(diry);
                 row.Cells[3].AddParagraph(dirz);
@@ -700,10 +704,10 @@ namespace PDF_IUCT
                 row.Format.Alignment = ParagraphAlignment.Center;
                 string imagex = beami.iso_x == 0 ? _image_folder + "aucun.png" :
                                     beami.iso_x > 0 ?
-                                        _image_folder + "x_positif.png" : _image_folder + "x_negatif.png";
+                                        _image_folder + "x_negatif.png" : _image_folder + "x_positif.png";
                 string imagey = beami.iso_y == 0 ? _image_folder + "aucun.png" :
                                     beami.iso_y > 0 ?
-                                        _image_folder + "y_positif.png" : _image_folder + "y_negatif.png";
+                                        _image_folder + "y_negatif.png" : _image_folder + "y_positif.png";
                 string imagez = beami.iso_z == 0 ? _image_folder + "aucun.png" :
                                     beami.iso_z > 0 ?
                                         _image_folder + "z_positif.png" : _image_folder + "z_negatif.png";
