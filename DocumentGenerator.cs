@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
 
+
 using ImageMagick;
 
 
@@ -68,6 +69,34 @@ namespace PDF_IUCT
             string filename = _working_folder + "pdf_temp.pdf";
             //MessageBox.Show(string.Format("{0}", filePath));
             pdfRenderer.PdfDocument.Save(filename);
+
+            //sauvegarde sous une autre chemin
+            string todayDateString = DateTime.Now.Day.ToString() + "_" + DateTime.Now.Month.ToString() + "_" + DateTime.Now.Year.ToString();
+            string currentpath = Path.Combine(@"\\PC0367\Users\IUCTO_LIMBUS\Desktop\Backup_pdf", todayDateString);
+            try
+            {
+                if (!Directory.Exists(currentpath))
+                {
+                    Directory.CreateDirectory(currentpath);
+                }
+            }
+            catch
+            {
+                System.Windows.MessageBox.Show(string.Format("Veuillez noter qu'il y a une erreur pour le backup du pdf lors de la verifiaction du chemin. Le PC limbus est-il bien allumé?"));
+            }
+            try
+            {
+                string nom_fichier = ctx.Patient.LastName + "_" + ctx.Patient.FirstName + "_" + ctx.PlanSetup.Id + "-" 
+                                    + ctx.PlanSetup.TotalDose.Dose + "Gy(" + ctx.PlanSetup.NumberOfFractions + "fr).pdf";
+                string chemin_limbus = Path.Combine(currentpath, nom_fichier);
+                System.Windows.MessageBox.Show(string.Format("chemin =  {0}", chemin_limbus));
+                pdfRenderer.PdfDocument.Save(chemin_limbus);
+            }
+            catch
+            {
+                System.Windows.MessageBox.Show(string.Format("Veuillez noter qu'il y a une erreur pour le backup du pdf. Des données utilisees pour le nom du futur fichier ne sont pas accessibles"));
+            }
+;
 
             return filename;
         }
