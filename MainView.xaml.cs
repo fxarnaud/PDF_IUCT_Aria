@@ -19,8 +19,17 @@ using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Windows.Interop;
 
+
 using Point = System.Windows.Point;
 using System.IO;
+
+
+
+//using System.Windows.Forms;
+
+
+
+
 
 namespace PDF_IUCT
 {
@@ -35,11 +44,13 @@ namespace PDF_IUCT
         private readonly MainViewModel _vm;
         private readonly string _screenshotpath;
         private readonly string _working_folder;
-        public MainView(MainViewModel viewModel, string working_folder, string screenshotpath)
+        private readonly string _backup_pc_adress;
+        public MainView(MainViewModel viewModel, string working_folder, string screenshotpath, string backupPC_adress)
         {
             _vm = viewModel;
             _screenshotpath = screenshotpath;
             _working_folder = working_folder;
+            _backup_pc_adress = backupPC_adress;
             InitializeComponent();
             DataContext = viewModel;
         }
@@ -63,35 +74,63 @@ namespace PDF_IUCT
 
         private void btn_print_Click(object sender, RoutedEventArgs e)
         {
-
+            string message = null;
             string filepath = null;
-            //Géneration du doc pdf 
+            //*****Géneration du doc pdf 
             try
             {
                 DocumentGenerator pdfdoc = new DocumentGenerator(_working_folder);
                 filepath = pdfdoc.GeneratePDF(_vm._ctx, _vm.PlotModel, _vm.Structures, _screenshotpath);
-                //MessageBox.Show(string.Format("{0}", filepath));
             }
             catch (Exception ex)
             {
-                // Le bloc catch capture l'exception et affiche un message d'erreur
-                MessageBox.Show(string.Format("Erreur lors de la génération du fichier pdf : " + ex.Message));
+                message += "Erreur lors de la génération du fichier pdf : " + ex.Message + "\n";
             }
 
             System.Windows.Application.Current.Windows[0].Close();
 
-            //Envoi sous Aria
+            //*****Envoi sous Aria
             try
             {
                 //A DECOMMENTER POUR ENVOYER SOUS ARIA
                 AriaSender asender = new AriaSender(_vm._ctx, filepath);
-                MessageBox.Show(string.Format("Rapport dosimétrique envoyé sous Aria"));
+                message += "- Rapport dosimétrique correctement envoyé sous Aria \n";
             }
             catch (Exception ex)
             {
-                // Le bloc catch capture l'exception et affiche un message d'erreur
-                MessageBox.Show(string.Format("Erreur lors de l'envoi sous Aria : " + ex.Message));
+                message += "- Erreur lors de l'envoi sous Aria : " + ex.Message + "\n";
             }
+
+            //******Envoi sous PC tiers de sauvegarde    
+            string todayDateString = DateTime.Now.Day.ToString() + "_" + DateTime.Now.Month.ToString() + "_" + DateTime.Now.Year.ToString();
+            string currentpath = System.IO.Path.Combine(_backup_pc_adress, todayDateString);
+            try
+            {
+                if (!Directory.Exists(currentpath))
+                {
+                    Directory.CreateDirectory(currentpath);
+                }
+            }
+            catch
+            {
+                message += "- Veuillez noter qu'il y a une erreur lors de la creation du repertoire /Datedujour sur le poste PC0367 \n";
+            }
+            try
+            {
+                string nom_fichier = _vm._ctx.Patient.LastName + "_" + _vm._ctx.Patient.FirstName + "_" + _vm._ctx.PlanSetup.Id + "-"
+                                    + _vm._ctx.PlanSetup.TotalDose.Dose + "Gy(" + _vm._ctx.PlanSetup.NumberOfFractions + "fr).pdf";
+                string chemin_source = System.IO.Path.Combine(currentpath, nom_fichier);
+
+                File.Copy(filepath, chemin_source, true);
+                message += "- Copie de backup correctement réalisée sous PC Tiers : " + chemin_source + "\n";
+                
+            }
+            catch
+            {
+                message += "- Veuillez noter qu'il y a une erreur lors du backup du pdf \n";
+            }
+
+            MessageBox.Show(string.Format(message));
 
         }
     }
