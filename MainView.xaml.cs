@@ -58,7 +58,17 @@ namespace PDF_IUCT
         private Structure GetStructure(object checkBoxObject)
         {
             var checkbox = (CheckBox)checkBoxObject;
-            Structure structure = _vm.Structures.FirstOrDefault(o => o.structure_id.ToUpper() == checkbox.Content.ToString().ToUpper()).structure;
+            Structure structure = null;
+            if (checkbox.Content != null)
+            {
+                structure = _vm.Structures.FirstOrDefault(o => o.structure_id.ToUpper() == checkbox.Content.ToString().ToUpper()).structure;
+            }
+            else
+            {
+                structure = _vm.Structures.FirstOrDefault(o => o.structure_id.ToUpper() == "BODY").structure;
+            }
+
+
             return structure;
         }
 
@@ -76,11 +86,13 @@ namespace PDF_IUCT
         {
             string message = null;
             string filepath = null;
+            ToDelete files_to_delete = new ToDelete(); //creation objet pour lister les chemins de fichiers a supprimer
             //*****Géneration du doc pdf 
             try
             {
                 DocumentGenerator pdfdoc = new DocumentGenerator(_working_folder);
-                filepath = pdfdoc.GeneratePDF(_vm._ctx, _vm.PlotModel, _vm.Structures, _screenshotpath);
+                
+                filepath = pdfdoc.GeneratePDF(_vm._ctx, _vm.PlotModel, _vm.Structures, _screenshotpath, files_to_delete);
             }
             catch (Exception ex)
             {
@@ -98,7 +110,7 @@ namespace PDF_IUCT
             }
             catch (Exception ex)
             {
-                message += "- Erreur lors de l'envoi sous Aria : " + ex.Message + "\n";
+                message += "- Erreur : Pas d'envoi sous Aria : " + ex.Message + "\n";
             }
 
             //******Envoi sous PC tiers de sauvegarde    
@@ -113,7 +125,7 @@ namespace PDF_IUCT
             }
             catch
             {
-                message += "- Veuillez noter qu'il y a une erreur lors de la creation du repertoire /Datedujour sur le poste PC0367 \n";
+                message += "- Warning : Veuillez noter qu'il y a une erreur lors de la creation du repertoire /Datedujour sur le poste PC0367 \n";
             }
             try
             {
@@ -127,10 +139,27 @@ namespace PDF_IUCT
             }
             catch
             {
-                message += "- Veuillez noter qu'il y a une erreur lors du backup du pdf \n";
+                message += "- Warning ; Veuillez noter qu'il y a une erreur lors du backup du pdf \n";
+            }
+
+
+
+
+            //*********Netoyage des fichiers temporaires utilisés
+            foreach (string path in files_to_delete.files_pathes.Values)
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception ex)
+                {
+                    message += "- Warning - Veuillez noter qu'il y a une erreur lors de la suppression des fichiers temporaires => Allo fxa \n";
+                }
             }
 
             MessageBox.Show(string.Format(message));
+
 
         }
     }

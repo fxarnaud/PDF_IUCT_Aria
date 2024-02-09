@@ -6,10 +6,10 @@
              xmlns:oxy ="http://oxyplot.org/wpf"
              xmlns:local="clr-namespace:PDF_IUCT"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="1500">
+             d:DesignHeight="1000" d:DesignWidth="1500">
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="1.6*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -17,9 +17,9 @@
             <RowDefinition Height="0.2*"></RowDefinition>
         </Grid.RowDefinitions>
         <oxy:PlotView Grid.Column="0" Grid.Row="0" Model ="{Binding PlotModel}" />
-        <DataGrid Grid.Column="1" Grid.Row="0" Name="dgStatistics" ItemsSource="{Binding Structures}" AutoGenerateColumns="False">
+        <DataGrid Grid.Column="1" Grid.Row="0" Name="dgStatistics" ItemsSource="{Binding Structures}" AutoGenerateColumns="False" >            
             <DataGrid.Columns>
-                <DataGridTemplateColumn Width="10" Header="">
+                <DataGridTemplateColumn Width="0.2*" Header="">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Border Background= "{Binding BackgroundColor}">
@@ -27,7 +27,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn  Header="Structure" Width="*">
+                <DataGridTemplateColumn  Header="Structure" Width="1.3*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <CheckBox Content="{Binding structure_id}" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" IsChecked="{Binding isChecked}"/>
@@ -38,9 +38,11 @@
                 <DataGridTextColumn Header="DMax(Gy)" Width="*" Binding="{Binding maxdose, StringFormat=N1}"></DataGridTextColumn>
                 <DataGridTextColumn Header="DMoy(Gy)" Width="*" Binding="{Binding meandose, StringFormat=N1}"></DataGridTextColumn>
                 <DataGridTextColumn Header="D1cc(Gy)" Width="*" Binding="{Binding d1cc, StringFormat=N1}"></DataGridTextColumn>
+                <DataGridTextColumn Header="D0.035cc(Gy)" Width="*" Binding="{Binding d0035cc, StringFormat=N1}"></DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
 
         <Button x:Name="btn_print" Content="PRINT" Grid.Row="1" Grid.ColumnSpan="2" Margin="12" Click="btn_print_Click" ></Button>
+
     </Grid>
 </UserControl>

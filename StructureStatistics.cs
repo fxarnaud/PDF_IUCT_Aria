@@ -19,17 +19,13 @@ namespace PDF_IUCT
         public double meandose { get; set; }
         public double maxdose { get; set; }
         public double d1cc { get; set; }
+
+        public double d0035cc { get; set; }
         public bool isChecked { get; set; }
-
-        // Brush redBrush = new SolidColorBrush(Colors.Red);
-
         public SolidColorBrush BackgroundColor
         {
             get { return new SolidColorBrush(structure.Color); }
         }
-
-
-
 
     }
 }

@@ -8,8 +8,9 @@ using VMS.TPS.Common.Model.Types;
 using OxyPlot;
 using OxyPlot.Axes;
 using System.Windows;
-//using CommunityToolkit.Mvvm.ComponentModel;
-//using CommunityToolkit.Mvvm.Input;
+using Newtonsoft.Json;
+using System.IO;
+
 
 namespace PDF_IUCT
 {
@@ -18,13 +19,15 @@ namespace PDF_IUCT
         private readonly PlanSetup _plan;
         public ScriptContext _ctx { get; private set; }
         public PlotModel PlotModel { get; private set; }
-        public IEnumerable<StructureStatistics> Structures { get; private set; }
+        public List<StructureStatistics> Structures { get; private set; }
 
+        private string _working_folder;
 
-        public MainViewModel(ScriptContext ctx)
+        public MainViewModel(ScriptContext ctx, string working_folder)
         {
             _ctx = ctx;
             _plan = ctx.PlanSetup;
+            _working_folder = working_folder;
             Structures = GetPlanStructuresAndComputeStatistics(ctx.PlanSetup);
             PlotModel = CreatePlotModel();
         }
@@ -32,32 +35,51 @@ namespace PDF_IUCT
         private List<StructureStatistics> GetPlanStructuresAndComputeStatistics(PlanSetup plan)
         {
             List<StructureStatistics> sstatistics = new List<StructureStatistics>();
+            List<string> excluded_keywords = new List<string>();
+            try
+            {
+                excluded_keywords = JsonConvert.DeserializeObject<List<string>>(System.IO.File.ReadAllText(Path.Combine(_working_folder, "Exclusion_MotsCles.json")));
+            }
+            catch
+            {
+                throw new ApplicationException("Erreur lors de la récupération des mots clés sous " + Path.Combine(_working_folder, "Exclusion_MotsCles.json"));
+            }
+
 
             foreach (var structure in plan.StructureSet.Structures)
             {
-                if ((structure.DicomType.ToUpper() == "PTV" || structure.DicomType.ToUpper() == "ORGAN" || structure.DicomType.ToUpper() == "CTV" || structure.DicomType.ToUpper() == "GTV") && !structure.IsEmpty)
+                if (structure.DicomType.ToUpper() != "SUPPORT")// || structure.DicomType.ToUpper() == "ORGAN" || structure.DicomType.ToUpper() == "CTV" || structure.DicomType.ToUpper() == "GTV" || structure.DicomType.ToUpper() == "AVOIDANCE") && !structure.IsEmpty)
                 {
-                    if (!structure.Id.ToUpper().Contains("OVER") && !structure.Id.ToUpper().Contains("-") && !structure.Id.ToUpper().Contains("GRAIN") && !structure.Id.ToUpper().Contains("PROTH")
-                        && !structure.Id.ToUpper().Contains("BLOC") && !structure.Id.ToUpper().Contains("PAC") && !structure.Id.ToUpper().Contains("ARTEF") && !structure.Id.ToUpper().Contains("TOTAL")
-                        && !structure.Id.ToUpper().Contains("ISOLE") && !structure.Id.ToUpper().Contains("PLANNING"))
+                    StructureStatistics stat = new StructureStatistics();
+               // MessageBox.Show(string.Format("Strcture = {0}", structure.Id));
+                    stat.structure = structure;
+                    stat.structure_id = structure.Id;
+                    stat.volume = structure.Volume;
+                    //Get structure statistics to fill a table                  
+                    stat.d1cc = plan.GetDoseAtVolume(structure, 1, VolumePresentation.AbsoluteCm3, DoseValuePresentation.Absolute).Dose;              
+                    stat.d0035cc = plan.GetDoseAtVolume(structure, 0.035, VolumePresentation.AbsoluteCm3, DoseValuePresentation.Absolute).Dose;
+                    DoseValuePresentation dvp = DoseValuePresentation.Absolute;
+                    DVHData dvh = plan.GetDVHCumulativeData(structure, dvp, VolumePresentation.Relative, 0.01);
+                    stat.maxdose = dvh.MaxDose.Dose;
+                    stat.meandose = dvh.MeanDose.Dose;
+                    bool containsExcludedKeyword = excluded_keywords.Any(keyword => structure.Id.ToUpper().Contains(keyword.ToUpper()));  
+                    if (!containsExcludedKeyword)
                     {
-                        StructureStatistics stat = new StructureStatistics();
-
-                        stat.structure = structure;
-                        stat.structure_id = structure.Id;
-                        stat.volume = structure.Volume;
-                        //Get structure statistics to fill a table                  
-                        stat.d1cc = plan.GetDoseAtVolume(structure, 1, VolumePresentation.AbsoluteCm3, DoseValuePresentation.Absolute).Dose;
-                        DoseValuePresentation dvp = DoseValuePresentation.Absolute;
-                        DVHData dvh = plan.GetDVHCumulativeData(structure, dvp, VolumePresentation.Relative, 0.01);
-                        stat.maxdose = dvh.MaxDose.Dose;
-                        stat.meandose = dvh.MeanDose.Dose;
                         stat.isChecked = true;
-                        sstatistics.Add(stat);
-
                     }
+                    else
+                    {
+                        stat.isChecked = false;
+                    }
+
+                    sstatistics.Add(stat);
                 }
             }
+            //List<StructureStatistics> firstThreeElements = sstatistics.Take(3).ToList();
+            //foreach (StructureStatistics stat in firstThreeElements)
+            //{
+            //    MessageBox.Show(String.Format("length = {0}", stat.structure_id));
+            //}
 
             return sstatistics != null
             ? sstatistics
@@ -146,7 +168,7 @@ namespace PDF_IUCT
 
         private double GetLineThickness(string structureId)
         {
-            if (structureId.ToUpper().Contains("PTV"))
+            if (structureId.ToUpper().Contains("PTV") && (!structureId.ToUpper().Contains("OPT")) && (!structureId.ToUpper().Contains("-PTV")) && (!structureId.ToUpper().Contains("RING")))
                 return 5;
             return 2;
         }
@@ -167,5 +189,10 @@ namespace PDF_IUCT
             PlotModel.InvalidatePlot(true);
         }
 
+    }
+
+    public class KeyWords
+    {
+        public List<string> ExcludedWords { get; set; }
     }
 }

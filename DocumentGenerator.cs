@@ -36,7 +36,7 @@ namespace PDF_IUCT
             _working_folder = working_folder;
             _image_folder = working_folder + "images\\";
         }
-        public string GeneratePDF(ScriptContext ctx, OxyPlot.PlotModel plotmodel, IEnumerable<StructureStatistics> structures, string screenshotpath)
+        public string GeneratePDF(ScriptContext ctx, OxyPlot.PlotModel plotmodel, IEnumerable<StructureStatistics> structures, string screenshotpath, ToDelete files)
         {
 
             // Creation du nouveau document migradoc
@@ -45,6 +45,7 @@ namespace PDF_IUCT
             document.Info.Author = "Claudius Regaud - Oncopole";
             DefineStyles(document);
 
+
             //Mise en page par défaut du nouveau document
             Section section = document.AddSection();
             section.PageSetup.Orientation = MigraDoc.DocumentObjectModel.Orientation.Landscape;
@@ -52,21 +53,22 @@ namespace PDF_IUCT
             section.PageSetup.FooterDistance = 0.8;
             section.PageSetup.LeftMargin = 20.0;
 
-            //Ecriture des données dans le document
+            //Ecriture des données dans le document      
             SetHeaders(document, section, ctx);
             FillPage1(ctx, document, section);
             FillPage2(ctx, document);
-            FillDVH_Image(document, plotmodel);
+            FillDVH_Image(document, plotmodel, files);
             FillDVH_Statistics(document, structures);
             FillDecalages(ctx, document);
-            FillScreenShot(document, screenshotpath);
+            FillScreenShot(document, screenshotpath, files);
 
             //Ecriture et sauvegarde du pdf
             const bool unicode = true;
             var pdfRenderer = new PdfDocumentRenderer(unicode);
             pdfRenderer.Document = document;
             pdfRenderer.RenderDocument();
-            string filename = _working_folder + "pdf_temp.pdf";
+            string filename = _working_folder + Guid.NewGuid().ToString() + ".pdf";
+            files.files_pathes["pdf"] = filename;
             //MessageBox.Show(string.Format("{0}", filePath));
             pdfRenderer.PdfDocument.Save(filename);
 
@@ -379,7 +381,8 @@ namespace PDF_IUCT
         static void FillPage2(ScriptContext ctx, Document document)
         {
 
-            //Recuperation des donées des champs
+            //Recuperation des donées des champs puis découpage en sous tableau pour avoir 6 elements max dans chaque tableau.
+            //Chaque sous tableau représente une page du documetn avec 6 champs.
             List<Beam_Element> Beam_Elements = new List<Beam_Element>();
             foreach (Beam beam in ctx.PlanSetup.Beams)
             {
@@ -390,93 +393,124 @@ namespace PDF_IUCT
                     Beam_Elements.Add(beam_el);
                 }
             }
+            //Selon le nombre de champs, splitte le tableau global avec les champs en sous tableaux ayant 6 elements max
+            List<List<Beam_Element>> resultLists = SplitList(Beam_Elements, 6);
 
-            //Ajout de la section et saut de page
-            var section = document.AddSection();
-            section.AddPageBreak();
-
-            //Tableau pour mettre un titre à la page
-            MigraDoc.DocumentObjectModel.Tables.Table table_title = new MigraDoc.DocumentObjectModel.Tables.Table();
-            MigraDoc.DocumentObjectModel.Tables.Column column = table_title.AddColumn(Unit.FromCentimeter(27));
-            column.Format.Alignment = ParagraphAlignment.Left;
-            column.Borders.Visible = false;
-            MigraDoc.DocumentObjectModel.Tables.Row row1 = table_title.AddRow();
-            row1.Format.Font.Bold = true;
-            row1.Format.Font.Size = 13;
-            row1.Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(175, 220, 232);
-            row1.Cells[0].AddParagraph("PARAMETRES DES FAISCEAUX DE TRAITEMENT");
-            row1 = table_title.AddRow();
-            row1.Format.Font.Size = 16;
-            row1.Cells[0].AddParagraph("");
-            document.LastSection.Add(table_title);
-
-            //Creation du premier tableau avec les données des champs et des autres tableaux sur une page après si nécessaire
-            MigraDoc.DocumentObjectModel.Tables.Table table = new MigraDoc.DocumentObjectModel.Tables.Table();
-            column = table.AddColumn(Unit.FromCentimeter(4));
-            column.Format.Alignment = ParagraphAlignment.Left;
-            column.Borders.Visible = true;
-
-            int nbrecol = 0;
-            int numtableau = 0;
-            foreach (var beam in Beam_Elements)
+            int comp = 1;
+            foreach (List<Beam_Element> lstbeams in resultLists)
             {
-                column = table.AddColumn(Unit.FromCentimeter(3));
+                //Ajout de la section et saut de page
+                var section = document.AddSection();
+                section.AddPageBreak();
+
+                //Sur chaque page, mettre un tableau pour le titre principal de la page
+                MigraDoc.DocumentObjectModel.Tables.Table table_title = new MigraDoc.DocumentObjectModel.Tables.Table();
+                MigraDoc.DocumentObjectModel.Tables.Column column = table_title.AddColumn(Unit.FromCentimeter(27));
                 column.Format.Alignment = ParagraphAlignment.Left;
-                column.Borders.Visible = true;
-                nbrecol++;
+                column.Borders.Visible = false;
+                MigraDoc.DocumentObjectModel.Tables.Row row1 = table_title.AddRow();
+                row1.Format.Font.Bold = true;
+                row1.Format.Font.Size = 13;
+                row1.Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(175, 220, 232);
+                string titre = "PARAMETRES DES FAISCEAUX DE TRAITEMENT " + "(" + comp + "/" + resultLists.Count().ToString() + ")";
+                row1.Cells[0].AddParagraph(titre);
+                row1 = table_title.AddRow();
+                row1.Format.Font.Size = 16;
+                row1.Cells[0].AddParagraph("");
+                document.LastSection.Add(table_title);
+             
 
-                if (nbrecol % 6 == 0)
+
+                //TABLEAU AVEC DONNEES DES CHAMPS
+                MigraDoc.DocumentObjectModel.Tables.Table beam_table = new MigraDoc.DocumentObjectModel.Tables.Table();
+                //Pour migradoc il faut faire le slignes et colonnes et ensuite remplir le tableau
+                for (int colonne = 0; colonne < lstbeams.Count()+1; colonne++)  //je fais +1 car je vais ajouter une colonne au debut de chaque tableau pour avoir le nom des items
                 {
-                    FillTablePage2(document, table, Beam_Elements, 6, numtableau);
-                    section.AddPageBreak();
-                    table = new MigraDoc.DocumentObjectModel.Tables.Table();
-                    column = table.AddColumn(Unit.FromCentimeter(3));
-                    column.Format.Alignment = ParagraphAlignment.Left;
-                    column.Borders.Visible = true;
-                    numtableau++;
+                    MigraDoc.DocumentObjectModel.Tables.Column beam_column = beam_table.AddColumn(Unit.FromCentimeter(4));
+                    beam_column.Format.Alignment = ParagraphAlignment.Left;
+                    beam_column.Borders.Visible = true;
                 }
-            }
+                //Then add rows
+                for (int ligne = 0; ligne < lstbeams[0].Datas.Count(); ligne++)
+                {
+                    MigraDoc.DocumentObjectModel.Tables.Row beam_row = beam_table.AddRow();
+                }
 
-            FillTablePage2(document, table, Beam_Elements, nbrecol > 6 ? nbrecol % 6 : nbrecol, numtableau);
+                // Then fill the table
+                // fill first column with beam items
+                for (int ligne = 0; ligne < lstbeams[0].Datas.Count(); ligne++)
+                {
+                    beam_table.Rows[ligne].Cells[0].AddParagraph(lstbeams[0].Datas.ElementAt(ligne).Key);
+                    beam_table.Rows[ligne].Cells[0].Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(245, 235, 235);
+                    beam_table.Rows[ligne].Cells[0].Format.Font.Bold = true;
+                }
+                // Then fill other columns with beam datas
+                int colo = 1;
+                foreach (var beam in lstbeams)
+                {
+                    for (int ligne = 0; ligne < beam.Datas.Count(); ligne++)
+                    {   
+                        beam_table.Rows[ligne].Cells[colo].AddParagraph(beam.Datas.ElementAt(ligne).Value);
+
+                        if (ligne == 0)
+                        {
+                            beam_table.Rows[ligne].Cells[colo].Borders.Visible = true;
+                            beam_table.Rows[ligne].Cells[colo].Format.Font.Bold = true;
+                            beam_table.Rows[ligne].Cells[colo].Format.Font.Size = 14;
+                            beam_table.Rows[ligne].Cells[colo].Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(245, 235, 235);
+                        }
+                        if (beam.Datas.ElementAt(ligne).Key.Equals("UM"))
+                        {
+                            beam_table.Rows[ligne].Cells[colo].Format.Font.Bold = true;
+                        }
+                        if (beam.Datas.ElementAt(ligne).Key.Equals("Bolus"))
+                        {
+                            beam_table.Rows[ligne].Cells[colo].Format.Font.Bold = true;
+                            beam_table.Rows[ligne].Cells[colo].Format.Font.Color = MigraDoc.DocumentObjectModel.Colors.Red;
+                        }
+                    }
+                    colo++;
+                }
+
+
+                // Add the table to the document
+                document.LastSection.Add(beam_table);
+                comp++;
+            }
         }
 
-        private static void FillTablePage2(Document document, MigraDoc.DocumentObjectModel.Tables.Table table, List<Beam_Element> Beam_Elements, int nbrecolonne, int numtableau)
-        {
-            for (int ligne = 0; ligne < Beam_Elements[0].Datas.Count(); ligne++)
-            {
-                MigraDoc.DocumentObjectModel.Tables.Row row = table.AddRow();
-                row.Borders.Width = 0.1;
-                row.Format.Font.Size = 13;                
-                if (ligne == 0)
-                {
-                    row.Borders.Visible = true;
-                    row.Format.Font.Bold = true;
-                    row.Format.Font.Size = 14;
-                    row.Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(175, 220, 232);// (175, 220, 232);
-                }
-                row.Cells[0].AddParagraph(Beam_Elements[0].Datas.ElementAt(ligne).Key);
 
-                for (int colonne = 0; colonne < nbrecolonne; colonne++)
-                {
-                    if (Beam_Elements[(colonne) + (numtableau * 6)].Datas.ElementAt(ligne).Key.Equals("Bolus"))
-                    {
-                        row.Cells[colonne + 1].Format.Font.Bold = true;
-                        row.Cells[colonne + 1].Format.Font.Color= MigraDoc.DocumentObjectModel.Colors.Red;
-                    }
-                    if (Beam_Elements[(colonne) + (numtableau * 6)].Datas.ElementAt(ligne).Key.Equals("UM"))
-                    {
-                        row.Cells[colonne + 1].Format.Font.Bold = true;
-                    }
-                    row.Cells[colonne + 1].AddParagraph(Beam_Elements[(colonne) + (numtableau * 6)].Datas.ElementAt(ligne).Value);
-                }
+        static List<List<T>> SplitList<T>(List<T> sourceList, int chunkSize)
+        {
+            List<List<T>> result = new List<List<T>>();
+
+            for (int i = 0; i < sourceList.Count; i += chunkSize)
+            {
+                List<T> chunk = sourceList.Skip(i).Take(chunkSize).ToList();
+                result.Add(chunk);
             }
-            document.LastSection.Add(table);
+
+            return result;
+        }
+
+        static List<List<T>> SplitListEnumerable<T>(IEnumerable<T> sourceEnumerable, int chunkSize)
+        {
+            List<T> sourceList = sourceEnumerable.ToList(); // Convert to List
+            List<List<T>> result = new List<List<T>>();
+
+            for (int i = 0; i < sourceList.Count; i += chunkSize)
+            {
+                List<T> chunk = sourceList.Skip(i).Take(chunkSize).ToList();
+                result.Add(chunk);
+            }
+
+            return result;
         }
 
         #endregion
 
         #region DVH et statistiques
-        static void FillDVH_Image(Document document, OxyPlot.PlotModel plotmodel)
+        static void FillDVH_Image(Document document, OxyPlot.PlotModel plotmodel, ToDelete files_to_delete)
         {
             Section section = document.AddSection();
             section.AddPageBreak();
@@ -495,15 +529,87 @@ namespace PDF_IUCT
             row1.Format.Font.Size = 16;
             row1.Cells[0].AddParagraph("");
             document.LastSection.Add(table_title);
-            string path = _working_folder + "dvh2.png";
+            string path = _working_folder + Guid.NewGuid().ToString() +".png";
+            files_to_delete.files_pathes["dvh"] = path; // recupere tous les files to deletepour les supprimer à la toute fin
             PngExporter.Export(plotmodel, path, 900, 500, OxyColors.White);
             section.AddImage(path);
         }
 
         static void FillDVH_Statistics(Document document, IEnumerable<StructureStatistics> structures)
         {
+
+            //ICI FAIRE SPLIT LIST    
+            List<List<StructureStatistics>> resultLists = SplitListEnumerable(structures, 35);
+            int compteur = 1;
+
             Section section = document.AddSection();
 
+            foreach (List<StructureStatistics> list in resultLists)
+            {
+                section.AddPageBreak();
+                //First create first header table
+                MigraDoc.DocumentObjectModel.Tables.Table table_header = CreateHeaderTable(compteur, resultLists.Count());
+                document.LastSection.Add(table_header);
+
+                //Then create empty table
+                //Add an empty table  
+                MigraDoc.DocumentObjectModel.Tables.Table table_stat = Create_DVHStat_Empty_Table();
+                MigraDoc.DocumentObjectModel.Color migraDocColor = new MigraDoc.DocumentObjectModel.Color(243, 228, 228);
+
+                foreach (StructureStatistics structure in list)
+                {
+                    if (structure.isChecked)
+                    {
+                        MigraDoc.DocumentObjectModel.Tables.Row row = table_stat.AddRow();
+                        row.Cells[0].Shading.Color = migraDocColor;
+                        row.Cells[1].AddParagraph(structure.structure_id);
+                        row.Cells[2].AddParagraph(structure.volume.ToString("N1"));
+                        row.Cells[3].AddParagraph(structure.maxdose.ToString("N1"));
+                        row.Cells[4].AddParagraph(structure.meandose.ToString("N1"));
+                        row.Cells[5].AddParagraph(structure.d1cc.ToString("N1"));
+                        row.Cells[6].AddParagraph(structure.d0035cc.ToString("N1"));                        
+                    }
+                }
+                document.LastSection.Add(table_stat);
+
+                compteur++;
+            }
+
+            //int i = 0;
+            //foreach (StructureStatistics structure in structures)
+            //{
+            //    if (structure.isChecked)
+            //    {
+            //        if (i == 20)  //On est en bout depage, faire sur une nouvelle page
+            //        {
+            //            document.LastSection.Add(table);
+            //            section.AddPageBreak();
+            //            MigraDoc.DocumentObjectModel.Tables.Table table_title2 = CreateHeaderTable();
+            //            document.LastSection.Add(table_title2);
+            //            //document.LastSection.AddParagraph("Statistiques du DVH", "Heading1");
+            //            table = Create_DVHStat_Empty_Table();
+            //            i = 0;
+            //        }
+
+
+
+
+            //        // Get the RGB values from the SolidColorBrush
+            //        byte r = structure.BackgroundColor.Color.R;
+            //        byte g = structure.BackgroundColor.Color.G;
+            //        byte b = structure.BackgroundColor.Color.B;
+
+            //        // Create a MigraDoc color with the RGB values
+
+            //        //Color migraDocColor = new Color(r, g, b);
+
+
+            //    }
+            //}
+
+        }
+        static MigraDoc.DocumentObjectModel.Tables.Table CreateHeaderTable(int compteur, int count)
+        {
             //Tableau pour mettre un titre à la page
             MigraDoc.DocumentObjectModel.Tables.Table table_title = new MigraDoc.DocumentObjectModel.Tables.Table();
             MigraDoc.DocumentObjectModel.Tables.Column column = table_title.AddColumn(Unit.FromCentimeter(27));
@@ -513,70 +619,32 @@ namespace PDF_IUCT
             row1.Format.Font.Bold = true;
             row1.Format.Font.Size = 13;
             row1.Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(175, 220, 232);
-            row1.Cells[0].AddParagraph("STATISTIQUES HISTOGRAMME DOSE-VOLUME");
+            row1.Cells[0].AddParagraph("STATISTIQUES HISTOGRAMME DOSE-VOLUME (" + compteur + "/" + count + ")");
             row1 = table_title.AddRow();
             row1.Format.Font.Size = 16;
             row1.Cells[0].AddParagraph("");
-            document.LastSection.Add(table_title);
 
-
-
-            //Add an empty table  
-            MigraDoc.DocumentObjectModel.Tables.Table table = Create_DVHStat_Empty_Table();
-
-            int i = 0;
-            foreach (StructureStatistics structure in structures)
-            {
-                if (structure.isChecked)
-                {
-                    if (i == 29)  //On est en bout depage, faire sur une nouvelle page
-                    {
-                        document.LastSection.Add(table);
-                        section.AddPageBreak();
-                        document.LastSection.AddParagraph("Statistiques du DVH", "Heading1");
-                        table = Create_DVHStat_Empty_Table();
-                        i = 0;
-                    }
-                    MigraDoc.DocumentObjectModel.Tables.Row row = table.AddRow();
-
-
-
-                    // Get the RGB values from the SolidColorBrush
-                    byte r = structure.BackgroundColor.Color.R;
-                    byte g = structure.BackgroundColor.Color.G;
-                    byte b = structure.BackgroundColor.Color.B;
-
-                    // Create a MigraDoc color with the RGB values
-                    MigraDoc.DocumentObjectModel.Color migraDocColor = new MigraDoc.DocumentObjectModel.Color(r, g, b);
-                    //Color migraDocColor = new Color(r, g, b);
-
-                    row.Cells[0].Shading.Color = migraDocColor;
-                    row.Cells[1].AddParagraph(structure.structure_id);
-                    row.Cells[2].AddParagraph(structure.volume.ToString("N1"));
-                    row.Cells[3].AddParagraph(structure.maxdose.ToString("N1"));
-                    row.Cells[4].AddParagraph(structure.meandose.ToString("N1"));
-                    row.Cells[5].AddParagraph(structure.d1cc.ToString("N1"));
-                    i++;
-                }
-            }
-            document.LastSection.Add(table);
+            return table_title;
         }
 
         static MigraDoc.DocumentObjectModel.Tables.Table Create_DVHStat_Empty_Table()
         {
             MigraDoc.DocumentObjectModel.Tables.Table table = new MigraDoc.DocumentObjectModel.Tables.Table();
             table.Borders.Width = 0.75;
-            MigraDoc.DocumentObjectModel.Tables.Column column = table.AddColumn(Unit.FromCentimeter(1));//
-            MigraDoc.DocumentObjectModel.Tables.Column column0 = table.AddColumn(Unit.FromCentimeter(5));
-            MigraDoc.DocumentObjectModel.Tables.Column column1 = table.AddColumn(Unit.FromCentimeter(4));
+            MigraDoc.DocumentObjectModel.Tables.Column column0 = table.AddColumn(Unit.FromCentimeter(1));//
+            MigraDoc.DocumentObjectModel.Tables.Column column1 = table.AddColumn(Unit.FromCentimeter(5));
             MigraDoc.DocumentObjectModel.Tables.Column column2 = table.AddColumn(Unit.FromCentimeter(4));
             MigraDoc.DocumentObjectModel.Tables.Column column3 = table.AddColumn(Unit.FromCentimeter(4));
             MigraDoc.DocumentObjectModel.Tables.Column column4 = table.AddColumn(Unit.FromCentimeter(4));
+            MigraDoc.DocumentObjectModel.Tables.Column column5 = table.AddColumn(Unit.FromCentimeter(4));
+            MigraDoc.DocumentObjectModel.Tables.Column column6 = table.AddColumn(Unit.FromCentimeter(4));
             column0.Format.Alignment = ParagraphAlignment.Center;
             column1.Format.Alignment = ParagraphAlignment.Center;
             column2.Format.Alignment = ParagraphAlignment.Center;
             column3.Format.Alignment = ParagraphAlignment.Center;
             column4.Format.Alignment = ParagraphAlignment.Center;
+            column5.Format.Alignment = ParagraphAlignment.Center;
+            column6.Format.Alignment = ParagraphAlignment.Center;
 
             MigraDoc.DocumentObjectModel.Tables.Row row1 = table.AddRow();
             row1.Format.Font.Bold = true;
@@ -588,9 +656,12 @@ namespace PDF_IUCT
             row1.Cells[3].AddParagraph("Dose Max(Gy)");
             row1.Cells[4].AddParagraph("Dose Moyenne(Gy)");
             row1.Cells[5].AddParagraph("Dose 1cc(Gy)");
+            row1.Cells[6].AddParagraph("Dose 0.035cc(Gy)");
 
             return table;
         }
+
+
         #endregion
 
         #region Decalages
@@ -754,13 +825,15 @@ namespace PDF_IUCT
         #endregion
 
         #region Vue triangulaire
-        private static void FillScreenShot(Document document, string screenshotpath_in)
+        private static void FillScreenShot(Document document, string screenshotpath_in, ToDelete files_to_delete)
         {
-            string screenshotpath_out = _working_folder + "screenshot_rescaled.png";
             Section section = document.AddSection();
             section.AddPageBreak();
+
+            string screenshotpath_out = _working_folder + Guid.NewGuid().ToString() + ".png";
             RescaleImage(screenshotpath_in, screenshotpath_out, 1024, 768);
             section.AddImage(screenshotpath_out);
+            files_to_delete.files_pathes["sshot"] = screenshotpath_out; //ajout ici pour recuperer tous les fichiers à supprimer et les supprimer à la fin
         }
 
         public static void RescaleImage(string sourceImagePath, string outputImagePath, int newWidth, int newHeight)
@@ -774,12 +847,14 @@ namespace PDF_IUCT
             }
         }
 
-        public static void SaveScreenshotToFile(Bitmap screenshot, string outputPath)
-        {
-            screenshot.Save(outputPath, System.Drawing.Imaging.ImageFormat.Png);
-        }
+        //public static void SaveScreenshotToFile(Bitmap screenshot, string outputPath)
+        //{
+        //    screenshot.Save(outputPath, System.Drawing.Imaging.ImageFormat.Png);
+        //}
 
         #endregion
+
+
 
     }
 
