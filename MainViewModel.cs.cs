@@ -46,14 +46,11 @@ namespace PDF_IUCT
             {
                 throw new ApplicationException("Erreur lors de la récupération des mots clés sous " + Path.Combine(_working_folder, "Exclusion_MotsCles.json"));
             }
-            //.=IDEE / TESTER SI JAFFICHE TOUT AVEC AUTOGENERATE COLUMN = true. Dans ce casla j'ai une colonne propre à ischecked'
-            //    je crois voir que j'ai des osucis de recup de background color.A creuser
-            //    patitente test culot,nathalie'
-            //VOIR BACKGROUND COLOR!!
+
 
             foreach (var structure in plan.StructureSet.Structures)
             {
-                if (structure.DicomType.ToUpper() != "SUPPORT")// || structure.DicomType.ToUpper() == "ORGAN" || structure.DicomType.ToUpper() == "CTV" || structure.DicomType.ToUpper() == "GTV" || structure.DicomType.ToUpper() == "AVOIDANCE") && !structure.IsEmpty)
+                if (structure.DicomType.ToUpper() != "SUPPORT" && structure.DicomType.ToUpper() != "MARKER" && !structure.IsEmpty)
                 {
                     StructureStatistics stat = new StructureStatistics();
                // MessageBox.Show(string.Format("Strcture = {0}", structure.Id));
@@ -65,8 +62,12 @@ namespace PDF_IUCT
                     stat.d0035cc = plan.GetDoseAtVolume(structure, 0.035, VolumePresentation.AbsoluteCm3, DoseValuePresentation.Absolute).Dose;
                     DoseValuePresentation dvp = DoseValuePresentation.Absolute;
                     DVHData dvh = plan.GetDVHCumulativeData(structure, dvp, VolumePresentation.Relative, 0.01);
+                   //MessageBox.Show(string.Format("pour structu = {0} et type = {1}", structure.Id, structure.DicomType.ToString())); 
+               
                     stat.maxdose = dvh.MaxDose.Dose;
-                    stat.meandose = dvh.MeanDose.Dose;
+                    stat.meandose = dvh.MeanDose.Dose;                   
+    
+
                     bool containsExcludedKeyword = excluded_keywords.Any(keyword => structure.Id.ToUpper().Contains(keyword.ToUpper()));  
                     if (!containsExcludedKeyword)
                     {
