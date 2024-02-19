@@ -581,38 +581,6 @@ namespace PDF_IUCT
                 compteur++;
             }
 
-            //int i = 0;
-            //foreach (StructureStatistics structure in structures)
-            //{
-            //    if (structure.isChecked)
-            //    {
-            //        if (i == 20)  //On est en bout depage, faire sur une nouvelle page
-            //        {
-            //            document.LastSection.Add(table);
-            //            section.AddPageBreak();
-            //            MigraDoc.DocumentObjectModel.Tables.Table table_title2 = CreateHeaderTable();
-            //            document.LastSection.Add(table_title2);
-            //            //document.LastSection.AddParagraph("Statistiques du DVH", "Heading1");
-            //            table = Create_DVHStat_Empty_Table();
-            //            i = 0;
-            //        }
-
-
-
-
-            //        // Get the RGB values from the SolidColorBrush
-            //        byte r = structure.BackgroundColor.Color.R;
-            //        byte g = structure.BackgroundColor.Color.G;
-            //        byte b = structure.BackgroundColor.Color.B;
-
-            //        // Create a MigraDoc color with the RGB values
-
-            //        //Color migraDocColor = new Color(r, g, b);
-
-
-            //    }
-            //}
-
         }
         static MigraDoc.DocumentObjectModel.Tables.Table CreateHeaderTable(int compteur, int count)
         {

@@ -115,9 +115,10 @@ namespace PDF_IUCT
                     Directory.CreateDirectory(currentpath);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                message += "- Warning : Veuillez noter qu'il y a une erreur lors de la creation du repertoire /Datedujour sur le poste PC0367 \n";
+                message += "- Warning : Veuillez noter qu'il y a une erreur lors de la creation du repertoire /Datedujour sur le poste PC0367 \n" +
+                    ex;
             }
             try
             {

@@ -16,8 +16,8 @@
             <RowDefinition Height="2*"></RowDefinition>
             <RowDefinition Height="0.2*"></RowDefinition>
         </Grid.RowDefinitions>
-        <oxy:PlotView Grid.Column="0" Grid.Row="0" Model ="{Binding PlotModel}" />
-        <DataGrid Grid.Column="1" Grid.Row="0" Name="dgStatistics" ItemsSource="{Binding Structures}"  CanUserAddRows="False" AutoGenerateColumns="False">            
+        <oxy:PlotView Grid.Column="0" Grid.Row="0" Model ="{Binding PlotModel}" Style="{x:Null}"/>
+        <DataGrid Grid.Column="1" Grid.Row="0" Name="dgStatistics" ItemsSource="{Binding Structures}"  CanUserAddRows="False" AutoGenerateColumns="False" Style="{x:Null}">            
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="0.2*" Header="">
                     <DataGridTemplateColumn.CellTemplate>
@@ -30,7 +30,7 @@
                 <DataGridTemplateColumn  Header="Structure" Width="1.3*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <CheckBox Content="{Binding structure_id}" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" IsChecked="{Binding isChecked}"/>
+                            <CheckBox Content="{Binding structure_id}" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" IsChecked="{Binding isChecked}" Style="{x:Null}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -42,7 +42,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Button x:Name="btn_print" Content="PRINT" Grid.Row="1" Grid.ColumnSpan="2" Margin="12" Background="PaleGreen" Click="btn_print_Click" ></Button>
+        <Button x:Name="btn_print" Content="PRINT" Grid.Row="1" Grid.ColumnSpan="2" Margin="12" Background="PaleGreen" Click="btn_print_Click"  Style="{x:Null}"></Button>
 
     </Grid>
 </UserControl>
