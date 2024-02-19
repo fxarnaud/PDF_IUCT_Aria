@@ -95,9 +95,10 @@ namespace VMS.TPS
             Window window = new Window();
             var mainViewModel = new MainViewModel(context, working_folder);
             var mainView = new MainView(mainViewModel, working_folder, filePath, backupPC_adress);
+
             window.Title = "DVH  Plots ";
             window.Content = mainView;
-            window.Height = 800;
+            window.Height = 900;
 
             window.ShowDialog();
 

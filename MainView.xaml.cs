@@ -58,16 +58,8 @@ namespace PDF_IUCT
         private Structure GetStructure(object checkBoxObject)
         {
             var checkbox = (CheckBox)checkBoxObject;
-            Structure structure = null;
-            if (checkbox.Content != null)
-            {
-                structure = _vm.Structures.FirstOrDefault(o => o.structure_id.ToUpper() == checkbox.Content.ToString().ToUpper()).structure;
-            }
-            else
-            {
-                structure = _vm.Structures.FirstOrDefault(o => o.structure_id.ToUpper() == "BODY").structure;
-            }
-
+            Structure structure = _vm._ctx.StructureSet.Structures.FirstOrDefault(o => o.Id.ToUpper() == checkbox.Content.ToString().ToUpper());
+            // Structure structure = _vm.Structures.FirstOrDefault(o => o.structure_id.ToUpper() == checkbox.Content.ToString().ToUpper()).structure;
 
             return structure;
         }

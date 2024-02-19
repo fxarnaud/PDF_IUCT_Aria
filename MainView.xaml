@@ -17,7 +17,7 @@
             <RowDefinition Height="0.2*"></RowDefinition>
         </Grid.RowDefinitions>
         <oxy:PlotView Grid.Column="0" Grid.Row="0" Model ="{Binding PlotModel}" />
-        <DataGrid Grid.Column="1" Grid.Row="0" Name="dgStatistics" ItemsSource="{Binding Structures}" AutoGenerateColumns="False" >            
+        <DataGrid Grid.Column="1" Grid.Row="0" Name="dgStatistics" ItemsSource="{Binding Structures}"  CanUserAddRows="False" AutoGenerateColumns="False">            
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="0.2*" Header="">
                     <DataGridTemplateColumn.CellTemplate>
@@ -42,7 +42,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Button x:Name="btn_print" Content="PRINT" Grid.Row="1" Grid.ColumnSpan="2" Margin="12" Click="btn_print_Click" ></Button>
+        <Button x:Name="btn_print" Content="PRINT" Grid.Row="1" Grid.ColumnSpan="2" Margin="12" Background="PaleGreen" Click="btn_print_Click" ></Button>
 
     </Grid>
 </UserControl>

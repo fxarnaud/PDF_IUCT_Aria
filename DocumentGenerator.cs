@@ -225,7 +225,7 @@ namespace PDF_IUCT
                 {"ID image : ", ctx.Image.Id},
                 {"Système d'imagerie : ", ctx.Image.Series.ImagingDeviceId},
                 {"Orientation du traitement : ", Translate( ctx.Image.ImagingOrientation.ToString())},
-                {"Décalage de l'origine/à DICOM : ","(" + (ctx.Image.UserOrigin.x / 10).ToString("N2") + " cm," + (ctx.Image.UserOrigin.y / 10).ToString("N2") + " cm," + (ctx.Image.UserOrigin.z / 10).ToString("N2") + "cm)" },
+                {"Décalage de l'origine/à DICOM : ","(" + (ctx.Image.UserOrigin.x / 10).ToString("N2") + " cm," + (ctx.Image.UserOrigin.y / 10).ToString("N2") + " cm," + (ctx.Image.UserOrigin.z / 10).ToString("N2") + " cm)" },
                 {"Type de traitement : ", GetTreatmentType(ctx.PlanSetup)}
             };
             Dictionary<string, string> prescription_datas = new Dictionary<string, string>()
@@ -233,10 +233,10 @@ namespace PDF_IUCT
                 { "Méthode normalisation ", ctx.PlanSetup.PlanNormalizationMethod },
                 { "Volume cible : ", ctx.PlanSetup.TargetVolumeID},
                 { "Point de reference principal ", ctx.PlanSetup.PrimaryReferencePoint.Id},
-                { "Valeur de normalisation : ", ctx.PlanSetup.PlanNormalizationValue.ToString("N1") + " %"},
+                { "Valeur de normalisation : ", ctx.PlanSetup.PlanNormalizationValue.ToString("N1") + "%"},
                 { "Pourcentage de dose prescrite ",(ctx.PlanSetup.TreatmentPercentage * 100).ToString("N1") + "%" },
                 { "Fractionnement : ", "" },
-                { "Dose Prescrite : ", ctx.PlanSetup.TotalDose.ValueAsString + "Gy (" + ctx.PlanSetup.DosePerFraction.ValueAsString + "Gy/fraction)"},
+                { "Dose Prescrite : ", ctx.PlanSetup.TotalDose.Dose.ToString("N1") + " Gy (" + ctx.PlanSetup.DosePerFraction.Dose.ToString("N2") + " Gy/fraction)"},
                 { "Nombre de fractions : ", ctx.PlanSetup.NumberOfFractions.ToString()},
             };
 
@@ -537,8 +537,6 @@ namespace PDF_IUCT
 
         static void FillDVH_Statistics(Document document, IEnumerable<StructureStatistics> structures)
         {
-
-            //ICI FAIRE SPLIT LIST    
             List<List<StructureStatistics>> resultLists = SplitListEnumerable(structures, 35);
             int compteur = 1;
 
@@ -561,7 +559,15 @@ namespace PDF_IUCT
                     if (structure.isChecked)
                     {
                         MigraDoc.DocumentObjectModel.Tables.Row row = table_stat.AddRow();
-                        row.Cells[0].Shading.Color = migraDocColor;
+
+                        // Get the RGB values from the SolidColorBrush
+
+                        byte r = structure.BackgroundColor.Color.R;
+                        byte g = structure.BackgroundColor.Color.G;
+                        byte b = structure.BackgroundColor.Color.B;
+                        MigraDoc.DocumentObjectModel.Color structureColor = new MigraDoc.DocumentObjectModel.Color(r, g, b);
+
+                        row.Cells[0].Shading.Color = structureColor;
                         row.Cells[1].AddParagraph(structure.structure_id);
                         row.Cells[2].AddParagraph(structure.volume.ToString("N1"));
                         row.Cells[3].AddParagraph(structure.maxdose.ToString("N1"));
@@ -652,11 +658,11 @@ namespace PDF_IUCT
             row1.Shading.Color = MigraDoc.DocumentObjectModel.Color.FromRgb(200, 200, 200);
             row1.Cells[0].AddParagraph("");  //
             row1.Cells[1].AddParagraph("Structure");
-            row1.Cells[2].AddParagraph("Volume(cc)");
-            row1.Cells[3].AddParagraph("Dose Max(Gy)");
-            row1.Cells[4].AddParagraph("Dose Moyenne(Gy)");
-            row1.Cells[5].AddParagraph("Dose 1cc(Gy)");
-            row1.Cells[6].AddParagraph("Dose 0.035cc(Gy)");
+            row1.Cells[2].AddParagraph("Volume (cc)");
+            row1.Cells[3].AddParagraph("Dose Max (Gy)");
+            row1.Cells[4].AddParagraph("Dose Moyenne (Gy)");
+            row1.Cells[5].AddParagraph("Dose 1cc (Gy)");
+            row1.Cells[6].AddParagraph("Dose 0.035cc (Gy)");
 
             return table;
         }

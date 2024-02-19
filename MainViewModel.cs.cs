@@ -21,6 +21,8 @@ namespace PDF_IUCT
         public PlotModel PlotModel { get; private set; }
         public List<StructureStatistics> Structures { get; private set; }
 
+        //public List<Item> Items { get; private set; }
+
         private string _working_folder;
 
         public MainViewModel(ScriptContext ctx, string working_folder)
@@ -44,7 +46,10 @@ namespace PDF_IUCT
             {
                 throw new ApplicationException("Erreur lors de la récupération des mots clés sous " + Path.Combine(_working_folder, "Exclusion_MotsCles.json"));
             }
-
+            //.=IDEE / TESTER SI JAFFICHE TOUT AVEC AUTOGENERATE COLUMN = true. Dans ce casla j'ai une colonne propre à ischecked'
+            //    je crois voir que j'ai des osucis de recup de background color.A creuser
+            //    patitente test culot,nathalie'
+            //VOIR BACKGROUND COLOR!!
 
             foreach (var structure in plan.StructureSet.Structures)
             {
@@ -75,11 +80,6 @@ namespace PDF_IUCT
                     sstatistics.Add(stat);
                 }
             }
-            //List<StructureStatistics> firstThreeElements = sstatistics.Take(3).ToList();
-            //foreach (StructureStatistics stat in firstThreeElements)
-            //{
-            //    MessageBox.Show(String.Format("length = {0}", stat.structure_id));
-            //}
 
             return sstatistics != null
             ? sstatistics
@@ -134,7 +134,10 @@ namespace PDF_IUCT
         public void RemoveDvhCurve(Structure structure)
         {
             var series = FindSeries(structure.Id);
-            PlotModel.Series.Remove(series);
+            if (series != null)  //rajout ici pour éviter bug d'affichage
+            {
+                PlotModel.Series.Remove(series);
+            }
             UpdatePlot();
         }
         private DVHData CalculateDvh(Structure structure)
@@ -167,9 +170,7 @@ namespace PDF_IUCT
         }
 
         private double GetLineThickness(string structureId)
-        {
-            if (structureId.ToUpper().Contains("PTV") && (!structureId.ToUpper().Contains("OPT")) && (!structureId.ToUpper().Contains("-PTV")) && (!structureId.ToUpper().Contains("RING")))
-                return 5;
+        {                
             return 2;
         }
 
@@ -179,7 +180,7 @@ namespace PDF_IUCT
         }
 
         private OxyPlot.Series.Series FindSeries(string structureId)
-        {
+        {  
             return PlotModel.Series.FirstOrDefault(x =>
             (string)x.Tag == structureId);
         }

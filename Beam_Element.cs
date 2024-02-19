@@ -51,10 +51,10 @@ namespace PDF_IUCT
             datas.Add("X2", Convert.ToString(x2t / 10));
             datas.Add("Y1", Convert.ToString(y1t / 10));
             datas.Add("Y2", Convert.ToString(y2t / 10));
-            datas.Add("Taille de champ", (x1t + x2t) / 10 + "cm x " + (y1t + y2t) / 10 + "cm");
+            datas.Add("Taille de champ", (x1t + x2t) / 10 + " x " + (y1t + y2t) / 10 + " cm²");
 
             //************************************
-            datas.Add("Angle du bras", Math.Round(beam.ControlPoints.FirstOrDefault().GantryAngle, 1) + " °");
+            datas.Add("Angle du bras", Math.Round(beam.ControlPoints.FirstOrDefault().GantryAngle, 1) + "°");
 
             //*************************************
             if (beam.GantryDirection == GantryDirection.Clockwise)
@@ -74,9 +74,9 @@ namespace PDF_IUCT
             datas.Add("Angle d'arrêt du bras", beam.ControlPoints.Last().GantryAngle == beam.ControlPoints.FirstOrDefault().GantryAngle ? "-" : beam.ControlPoints.Last().GantryAngle + "°");
 
             //*************************************
-            datas.Add("Rot. collimateur", Math.Round(beam.ControlPoints.FirstOrDefault().CollimatorAngle, 1) + " °");
+            datas.Add("Rot. collimateur", Math.Round(beam.ControlPoints.FirstOrDefault().CollimatorAngle, 1) + "°");
             //************************************
-            datas.Add("Rot. de table", beam.ControlPoints.FirstOrDefault().PatientSupportAngle != 0 ? Math.Round(360 - beam.ControlPoints.FirstOrDefault().PatientSupportAngle, 1) + " °" : beam.ControlPoints.FirstOrDefault().PatientSupportAngle + " °");
+            datas.Add("Rot. de table", beam.ControlPoints.FirstOrDefault().PatientSupportAngle != 0 ? Math.Round(360 - beam.ControlPoints.FirstOrDefault().PatientSupportAngle, 1) + "°" : beam.ControlPoints.FirstOrDefault().PatientSupportAngle + "°");
             //************************************
             datas.Add("Bolus", (beam.Boluses == null || beam.Boluses.Count() == 0) ? "-" : beam.Boluses.FirstOrDefault().Id);
             //************************************
@@ -112,7 +112,7 @@ namespace PDF_IUCT
             }
 
             //************************************
-            datas.Add("UM", Math.Round(beam.Meterset.Value, 1) + " UM");
+            datas.Add("UM", Math.Round(beam.Meterset.Value, 1).ToString("N1") + " UM");
         }
 
         public Dictionary<string, string> Datas { get { return datas; } }
