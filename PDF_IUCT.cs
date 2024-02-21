@@ -29,10 +29,16 @@ namespace VMS.TPS
 
             PreliminaryTests.Test(context);
 
+            
+            string filePath = working_folder + Guid.NewGuid().ToString() + ".png";
+            ToDelete files_to_delete = new ToDelete();
+            //files.files_pathes["pdf"] = filename;
+            files_to_delete.files_pathes["sshot1"] = filePath;
+
             #region GESTION DES ECRANS
             //***************************************
             //First capture screen depending if i'm launching my screen in secondary or primary screen
-            string filePath = working_folder + "screenshot.png";
+
             Screen[] screens = Screen.AllScreens;
             if (screens.Length > 2)
             {
@@ -94,7 +100,7 @@ namespace VMS.TPS
 
             Window window = new Window();
             var mainViewModel = new MainViewModel(context, working_folder);
-            var mainView = new MainView(mainViewModel, working_folder, filePath, backupPC_adress);
+            var mainView = new MainView(mainViewModel, working_folder, filePath, backupPC_adress, files_to_delete);
 
             window.Title = "DVH  Plots ";
             window.Content = mainView;

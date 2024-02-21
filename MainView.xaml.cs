@@ -45,8 +45,10 @@ namespace PDF_IUCT
         private readonly string _screenshotpath;
         private readonly string _working_folder;
         private readonly string _backup_pc_adress;
-        public MainView(MainViewModel viewModel, string working_folder, string screenshotpath, string backupPC_adress)
+        private ToDelete files_to_delete;
+        public MainView(MainViewModel viewModel, string working_folder, string screenshotpath, string backupPC_adress, ToDelete files_delete)
         {
+            files_to_delete = files_delete;
             _vm = viewModel;
             _screenshotpath = screenshotpath;
             _working_folder = working_folder;
@@ -78,7 +80,7 @@ namespace PDF_IUCT
         {
             string message = null;
             string filepath = null;
-            ToDelete files_to_delete = new ToDelete(); //creation objet pour lister les chemins de fichiers a supprimer
+            //ToDelete files_to_delete = new ToDelete(); //creation objet pour lister les chemins de fichiers a supprimer
             //*****Géneration du doc pdf 
             try
             {

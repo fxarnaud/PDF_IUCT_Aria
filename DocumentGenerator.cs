@@ -807,7 +807,7 @@ namespace PDF_IUCT
             string screenshotpath_out = _working_folder + Guid.NewGuid().ToString() + ".png";
             RescaleImage(screenshotpath_in, screenshotpath_out, 1024, 768);
             section.AddImage(screenshotpath_out);
-            files_to_delete.files_pathes["sshot"] = screenshotpath_out; //ajout ici pour recuperer tous les fichiers à supprimer et les supprimer à la fin
+            files_to_delete.files_pathes["sshot2"] = screenshotpath_out; //ajout ici pour recuperer tous les fichiers à supprimer et les supprimer à la fin
         }
 
         public static void RescaleImage(string sourceImagePath, string outputImagePath, int newWidth, int newHeight)
@@ -827,8 +827,6 @@ namespace PDF_IUCT
         //}
 
         #endregion
-
-
 
     }
 
