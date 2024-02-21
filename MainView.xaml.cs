@@ -67,12 +67,17 @@ namespace PDF_IUCT
         }
 
         private void CheckBox_Checked(object checkBoxObject, RoutedEventArgs e)
-        {
+        {         
+            StructureStatistics el = _vm.Structures.Where(x => x.structure == GetStructure(checkBoxObject)).FirstOrDefault();
+            el.isChecked = true;
             _vm.AddDvhCurve(GetStructure(checkBoxObject));
+
         }
 
         private void CheckBox_Unchecked(object checkBoxObject, RoutedEventArgs e)
         {
+            StructureStatistics el = _vm.Structures.Where(x => x.structure == GetStructure(checkBoxObject)).FirstOrDefault();
+            el.isChecked = false;
             _vm.RemoveDvhCurve(GetStructure(checkBoxObject));
         }
 
