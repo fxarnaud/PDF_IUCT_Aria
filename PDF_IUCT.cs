@@ -28,7 +28,7 @@ namespace VMS.TPS
             string backupPC_adress = @"\\PC0367\Users\IUCTO_LIMBUS\Desktop\Backup_pdf\";
 
             PreliminaryTests.Test(context);
-
+             
             
             string filePath = working_folder + Guid.NewGuid().ToString() + ".png";
             ToDelete files_to_delete = new ToDelete();
