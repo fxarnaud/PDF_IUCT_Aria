@@ -25,7 +25,8 @@ namespace VMS.TPS
             string WORKBOOK_TEMPLATE_DIR = System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop); //A MODIFIER POUR MODIFIER LE CHEMIN PAR DEFAUT
             string WORKBOOK_RESULT_DIR = System.IO.Path.GetTempPath();
             string working_folder = @"\\srv015\radiotherapie\SCRIPTS_ECLIPSE\PDF_IUC\datas_nepaseffacer\";
-            string backupPC_adress = @"\\PC0367\Users\IUCTO_LIMBUS\Desktop\Backup_pdf\";
+            //string backupPC_adress = @"\\PC0367\Users\IUCTO_LIMBUS\Desktop\Backup_pdf\";
+            string backupPC_adress = @"\\srv015\RADIOPH_MODE_DEGR\Pdf_Dosimetries\";
 
             PreliminaryTests.Test(context);
              

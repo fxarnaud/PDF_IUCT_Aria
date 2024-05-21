@@ -129,7 +129,7 @@ namespace PDF_IUCT
             }
             try
             {
-                string nom_fichier = _vm._ctx.Patient.LastName + "_" + _vm._ctx.Patient.FirstName + "_" + _vm._ctx.PlanSetup.Id + "-"
+                string nom_fichier = _vm._ctx.Patient.LastName + "_" + _vm._ctx.Patient.FirstName + "_" + "_("+_vm._ctx.Patient.Id+")_" + _vm._ctx.PlanSetup.Id + "-"
                                     + _vm._ctx.PlanSetup.TotalDose.Dose + "Gy(" + _vm._ctx.PlanSetup.NumberOfFractions + "fr).pdf";
                 string chemin_source = System.IO.Path.Combine(currentpath, nom_fichier);
 
