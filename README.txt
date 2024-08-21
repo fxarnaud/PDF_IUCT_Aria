@@ -37,8 +37,8 @@ Si tu as des erreurs qui te reviennent et qui parlent de ces webservices dis le,
 
 	A noter : 
 		- j'ai fait en sorte de lire un fichier json (de souvenir) qui contient des mots clés pour ne pas afficher les dvh des structures qui contiennent ces mots clés là (genre les structures opt chez nous).
-		Si tu as des erreurs à un moment sur ça c'est juste qu'il faut lui donner à manger un fichier. Je peux te filer le fichier type c'est bidon au besoin.
-		Ca se passe dans MainView.xaml.cs. Voit la variable files_to_delete.
+		Si tu as des erreurs à un moment sur ça c'est juste qu'il faut lui donner à manger un fichier. Je te file le fichier type en pj du mail, c'est bidon au besoin.
+		Ca se passe dans MainViewModel.cs vers la ligne 37.
 		- Il y a un système de double copie du pdf généré pour en faire un backup pour les garder pour la cyber sécurité si jamais on se fait attaquer.
 		Tu peux décommenter sous le commentaire : //******Envoi sous PC tiers de sauvegarde  toujours dans MainView.xaml.cs
 
