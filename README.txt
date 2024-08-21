@@ -1,6 +1,10 @@
 - telecharger les assemblies nécessaires
 
-- Pour la partie AriaAccess :
+- Pour la partie AriaAccess 
+API AriaAccess varian differente que les dll de l'esapi. Elle utilise des webservices qui sont déjà sur le serveur varian. 
+Ceci est vrai pour la v15, pour la v18 ils ont créé une nouvelle api qui permet d'aller plus loin. Elle marche bien sur notre tbox v18 mais je n'ai pas encore géré le truc d'insérer des docs avec.
+Je ne te promets donc pas que cette api AriaAccess avec ses webservices soit toujours sur le serveur varian.
+Si tu as des erreurs qui te reviennent et qui parlent de ces webservices dis le, on pourra vérifier 2-3 trucs. Sinon c'est à voir avec l'ingé varian. Notre ingé en local (Gilles Calvet) est bien au courant (ma faute), ils peuvent communiquer si ce n'est pas le même ingé.
 	-  Aller sur myvarian 
 	- "myaccount" -> "API Key Management" -> "New API request"
 	- Remplir toutes les infos et demander une "Software System" -> "ARIA
@@ -24,11 +28,19 @@
 	port = numéro de port
 	dockey = ouvrir le fichier texte de la clé fournie par varian et copier-coller la partie qui suit "value="[...]
 
-- Encore dans le code, dans "Script.cs" modifie le nom du dossier et pointe vers un dossier que tu créés.
+- Le chemin absolu initial est renseigné dans PDF_IUCT.cs. Modifie le pour mettre un dossier à toi.
+- Toujours pour le chemin, dans le code dans DocumentGenerator.cs il utilise des images .png (il me semble) de décalages. Il faut donc que dans ton dossier tu aies un sous dossier 'images".
 	Dans ce dossier on va mettre les images genre le logo de ton centre et les fichier tampons qu'il va créér et qu'on va pas voir à l'usage.
 	Dans ce dossier créé un sous dossier "images". Tu peux mettre l'image de ton logo si tu veux. Il gère ça ligne 146 de "DocumentGenerator.cs".
 	Idem dans ce dossier j'ai fait les images des décalages de la table qu'on a comme dans les impressions eclipse. Il gère ca ligne à partir de la ligne 683 de "DocumentGenerator.cs". 
-	Chemin gerable dans DocumentGenerator.cs au debut du code. J'aurais pu les mettre en statics mais à l'époque je ne savais pas le faire.
+	J'aurais pu mettre les images en statics mais à l'époque je ne savais pas le faire.
+
+	A noter : 
+		- j'ai fait en sorte de lire un fichier json (de souvenir) qui contient des mots clés pour ne pas afficher les dvh des structures qui contiennent ces mots clés là (genre les structures opt chez nous).
+		Si tu as des erreurs à un moment sur ça c'est juste qu'il faut lui donner à manger un fichier. Je peux te filer le fichier type c'est bidon au besoin.
+		Ca se passe dans MainView.xaml.cs. Voit la variable files_to_delete.
+		- Il y a un système de double copie du pdf généré pour en faire un backup pour les garder pour la cyber sécurité si jamais on se fait attaquer.
+		Tu peux décommenter sous le commentaire : //******Envoi sous PC tiers de sauvegarde  toujours dans MainView.xaml.cs
 
 
 
