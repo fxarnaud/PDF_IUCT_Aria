@@ -717,7 +717,7 @@ namespace PDF_IUCT
                 row.Cells[0].AddParagraph("");
 
                 //prendre l'opposé de l'isocentre pour qu'on ait les decalages à réaliser
-                beami.iso_x = -beami.iso_x;
+                beami.iso_x = beami.iso_x;
                 beami.iso_y = -beami.iso_y;
                 beami.iso_z = beami.iso_z;  //Decalage à faire dans le même sens que la position de table
 
@@ -733,12 +733,9 @@ namespace PDF_IUCT
                 //Nouvelle ligne pour mettre les directions de décalages
                 row = table.AddRow();
                 row.Cells[0].AddParagraph("Direction :");
-                string dirx = "aucune";
-                dirx = beami.iso_x > 0 ? "Table vers la droite en regardant le bras" : "Table vers la  gauche en regardant le bras";
-                string diry = "aucune";
-                diry = beami.iso_y > 0 ? "Table vers le bas" : "Table vers le haut";
-                string dirz = "aucune";
-                dirz = beami.iso_z > 0 ? "Table en sortie (out)" : "Table en long vers le bras (in)";
+                string dirx = beami.iso_x==0?"Aucun":  beami.iso_x < 0 ? "Table vers la droite en regardant le bras" : "Table vers la  gauche en regardant le bras";
+                string diry = beami.iso_y==0?"Aucun":beami.iso_y > 0 ? "Table vers le bas" : "Table vers le haut";
+                string dirz= beami.iso_z == 0?"Aucun": beami.iso_z > 0 ? "Table en sortie (out)" : "Table en long vers le bras (in)";
                 row.Cells[1].AddParagraph(dirx);
                 row.Cells[2].AddParagraph(diry);
                 row.Cells[3].AddParagraph(dirz);
@@ -748,9 +745,9 @@ namespace PDF_IUCT
                 //Dernière ligne pour mettre les schéma des décalages à faire
                 row = table.AddRow();
                 row.Format.Alignment = ParagraphAlignment.Center;
-                string imagex = beami.iso_x == 0 ? _image_folder + @"Images\aucun.png" : //_image_folder + aucun.png" :
+                string imagex = beami.iso_x == 0 ? _image_folder + "aucun.png" : //_image_folder + aucun.png" :
                                     beami.iso_x > 0 ?
-                                        _image_folder + "x_negatif.png" : _image_folder + "x_positif.png";
+                                        _image_folder + "x_positif.png" : _image_folder + "x_negatif.png";
                 string imagey = beami.iso_y == 0 ? _image_folder + "aucun.png" :
                                     beami.iso_y > 0 ?
                                         _image_folder + "y_negatif.png" : _image_folder + "y_positif.png";
