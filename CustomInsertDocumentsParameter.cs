@@ -32,8 +32,9 @@ namespace PDF_IUCT
 
             //Données serveur pour utilsiation des aria webservices
             string docKey = "ce04163e-39dd-4be5-b3c1-da7154588c7a";
-            string hostName = "srvaria15-web";
+            string hostName = "srvaria18-platf";
             string port = "55051";
+  
             var documentPushRequest = new CustomInsertDocumentsParameter
             {
                 PatientId = new PatientIdentifier { ID1 = patientId },
