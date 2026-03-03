@@ -50,7 +50,7 @@ namespace PDF_IUCT
 
             foreach (var structure in plan.StructureSet.Structures)
             {
-                if (structure.DicomType.ToUpper() != "SUPPORT" && structure.DicomType.ToUpper() != "MARKER" && !structure.IsEmpty)
+                if (structure.DicomType.ToUpper() != "SUPPORT" && structure.DicomType.ToUpper() != "MARKER" && !structure.IsEmpty  && !structure.Id.ToLower().Contains("bolus"))
                 {
                     StructureStatistics stat = new StructureStatistics();
                // MessageBox.Show(string.Format("Strcture = {0}", structure.Id));
